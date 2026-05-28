@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif // !WIN32_LEAN_AND_MEAN
 
-
+#include"formatError.h"
 #include<iostream>
 #include<Windows.h>
 #include<WinSock2.h>
@@ -13,9 +13,11 @@
 
 using namespace std;
 
-#pragma comment(lib, "WS2_32.lib") //Äëÿ 
+#pragma comment(lib, "WS2_32.lib") 
+#pragma comment(lib, "Iphlpapi.lib") 
+#pragma comment(lib, "ErrorLib.lib") 
 
-#define PORT	"27015"
+#define PORT	"27014"
 #define BUFFER_LENGTH	1500
 
 void main()
@@ -53,7 +55,8 @@ void main()
 	SOCKET connect_socket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (connect_socket == INVALID_SOCKET)
 	{
-		cout << "Socket creation error: " << WSAGetLastError() << endl;
+		//cout << "Socket creation error: " << WSAGetLastError() << endl;
+		FormatWSALastError();
 		freeaddrinfo(result);
 		WSACleanup();
 		return;
@@ -63,7 +66,8 @@ void main()
 	iResult = connect(connect_socket, result->ai_addr, result->ai_addrlen);
 		if (iResult == SOCKET_ERROR)
 		{
-			cout << "Unable to connect to Server" << endl;
+			//cout << "Unable to connect to Server" << endl;
+			FormatWSALastError();
 			closesocket(connect_socket);
 			freeaddrinfo(result);
 			WSACleanup();
@@ -77,7 +81,8 @@ void main()
 		iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
 		if (iResult == SOCKET_ERROR)
 		{
-			cout << "Send failed:\t" << WSAGetLastError() << endl;
+			//cout << "Send failed:\t" << WSAGetLastError() << endl;
+			FormatWSALastError();
 			closesocket(connect_socket);
 			freeaddrinfo(result);
 			WSACleanup();
@@ -90,13 +95,14 @@ void main()
 			iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
 			if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)" << endl;
 			else if (result == 0) cout << "Connection closed" << endl;
-			else cout << "Receive failed\t" << WSAGetLastError() << endl;
+			else FormatWSALastError();// cout << "Receive failed\t" << WSAGetLastError() << endl;
 		} while (iResult > 0);
 
 		iResult = shutdown(connect_socket, SD_BOTH);
 		if (iResult == SOCKET_ERROR)
 		{
-			cout << "Shutdown failed: " << WSAGetLastError() << endl;
+			//cout << "Shutdown failed: " << WSAGetLastError() << endl;
+			FormatWSALastError();
 			closesocket(connect_socket);
 			freeaddrinfo(result);
 			WSACleanup();
