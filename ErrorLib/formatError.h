@@ -14,5 +14,6 @@
 using namespace std;
 
 #pragma comment(lib, "WS2_32.lib")
+#pragma comment(lib, "iphlpapi.lib")
 
 void FormatWSALastError();

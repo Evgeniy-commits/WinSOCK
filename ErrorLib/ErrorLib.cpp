@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "framework.h"
+//#include "framework.h"
 
 #include"formatError.h"
 #include<Windows.h>
@@ -14,8 +14,8 @@ void FormatWSALastError()
 {
 	DWORD errorCode = WSAGetLastError();
 
-	wchar_t errorStr[1024] = {};
-	DWORD errorStrSize = sizeof(errorStr) / sizeof(wchar_t) - 2;
+	//wchar_t errorStr[1024] = {};
+	//DWORD errorStrSize = sizeof(errorStr) / sizeof(wchar_t) - 1;
 
 	/*if (GetIpErrorString(errorCode, errorStr, &errorStrSize) == NO_ERROR)
 	{

@@ -4,12 +4,12 @@
 #define WIN32_LEAN_AND_MEAN
 #endif // !WIN32_LEAN_AND_MEAN
 
-#include"formatError.h"
 #include<iostream>
 #include<Windows.h>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h>
+#include"formatError.h"
 
 using namespace std;
 
@@ -17,7 +17,7 @@ using namespace std;
 #pragma comment(lib, "Iphlpapi.lib") 
 #pragma comment(lib, "ErrorLib.lib") 
 
-#define PORT	"27014"
+#define PORT	"27015"
 #define BUFFER_LENGTH	1500
 
 void main()
@@ -50,7 +50,7 @@ void main()
 		WSACleanup();
 		return;
 	}
-
+	
 	//3) Создаем сокет для клиента
 	SOCKET connect_socket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (connect_socket == INVALID_SOCKET)
