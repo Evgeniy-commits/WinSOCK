@@ -23,12 +23,15 @@ using namespace std;
 #define BUFFER_LENGTH	1500
 #define MAX_CONNECTIONS	5
 
+VOID clientInfo(SOCKET client_socket, sockaddr_in& clientAddr, INT szClientAddr, ofstream& logS);
+
 void main()
 {
 	setlocale(LC_ALL, "");
 	cout << "SERVER" << endl;
 	DWORD dwError = 0;
 	CHAR szError[256] = {};
+	ofstream logS("server_log", ios::app);
 
 	//INIT WinSOCK
 	WSADATA wsaData;
@@ -99,23 +102,25 @@ void main()
 	}
 
 	//6) Обработка соединений от клиентов:
-	SOCKET client_socket = accept(listen_socket, NULL, NULL);
+	sockaddr_in clientAddr;
+	int szClientAddr = sizeof(clientAddr);
+	SOCKET client_socket = accept(listen_socket, (sockaddr*)&clientAddr, &szClientAddr);
 	dwError = WSAGetLastError();
 	if (client_socket == INVALID_SOCKET)
 	{
 		cout << FormatLastError(dwError, szError) << endl;
 		cout << "Accept failed with error: " << WSAGetLastError() << endl;
 	}
+	clientInfo(client_socket, clientAddr, szClientAddr, logS);
 
 	//7) Получение и отправка данных
 	CHAR recvbuffer[BUFFER_LENGTH] = {};
 	CHAR sendbuffer[BUFFER_LENGTH] = {};
 	INT iSendResult = 0;
 	
-	ofstream logS("server_log", ios::app);
 	if (!logS.is_open())
 	{
-		cout << "Faild to open log" << endl;
+		cout << "Failed to open log" << endl;
 	}
 
 	do
@@ -172,3 +177,4 @@ void main()
 	closesocket(listen_socket);
 	WSACleanup();
 }
+

@@ -1,5 +1,6 @@
+Connected: IP = 127.0.0.1, Port = 63643,Time = 2026-06-01 15:12:40
 RECV: Hello Server(12 Bytes)
 SEND: Bytes sent: Hello Server(12 bytes)
-RECV: Привет мир(10 Bytes)
-SEND: Bytes sent: Привет мир(10 bytes)
-Receive failed with error: 10054
+RECV: Hello World(11 Bytes)
+SEND: Bytes sent: Hello World(11 bytes)
+INFO: Connection closing...
