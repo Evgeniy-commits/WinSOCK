@@ -3,3 +3,6 @@ SEND: Bytes sent: Hello Server(12 bytes)
 RECV: Привет мир(10 Bytes)
 SEND: Bytes sent: Привет мир(10 bytes)
 Receive failed with error: 10054
+Receive failed with error: 10038
+Receive failed with error: 10038
+Receive failed with error: 10038
