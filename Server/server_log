@@ -34,3 +34,16 @@ SEND: Bytes sent: привет сервер(13 bytes)
 RECV: ура(3 Bytes)
 SEND: Bytes sent: ура(3 bytes)
 Receive failed with error: 10054
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello(5 Bytes)
+SEND: Bytes sent: Hello(5 bytes)
