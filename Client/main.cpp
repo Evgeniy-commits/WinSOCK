@@ -45,7 +45,7 @@ void main()
 	hints.ai_protocol = IPPROTO_TCP;
 
 	//Куда подключаемся
-	iResult = getaddrinfo("192.168.1.104", PORT, &hints, &result);
+	iResult = getaddrinfo("192.168.1.102", PORT, &hints, &result);
 	if (iResult != 0)
 	{
 		cout << "getaddrinfo failed: " << iResult << endl;

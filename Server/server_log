@@ -9,3 +9,26 @@ RECV: Hello Server(12 Bytes)
 SEND: Bytes sent: Hello Server(12 bytes)
 RECV: Hello World!!!!(15 Bytes)
 SEND: Bytes sent: Hello World!!!!(15 bytes)
+Connected: IP = 192.168.1.104, Port = 61753,Time = 2026-06-01 20:52:02
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+Connected: IP = 192.168.1.104, Port = 61855,Time = 2026-06-01 20:53:09
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello World(11 Bytes)
+SEND: Bytes sent: Hello World(11 bytes)
+INFO: Connection closing...
+Connected: IP = 192.168.1.104, Port = 62149,Time = 2026-06-01 20:56:10
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: привет мир(10 Bytes)
+SEND: Bytes sent: привет мир(10 bytes)
+Receive failed with error: 10054
+Connected: IP = 192.168.1.104, Port = 62946,Time = 2026-06-01 21:03:44
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello World(11 Bytes)
+SEND: Bytes sent: Hello World(11 bytes)
+RECV: привет мир(10 Bytes)
+SEND: Bytes sent: привет мир(10 bytes)
+INFO: Connection closing...
