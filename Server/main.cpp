@@ -6,6 +6,7 @@
 
 
 #include<iostream>
+#include<fstream>
 #include<Windows.h>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
@@ -111,31 +112,51 @@ void main()
 	CHAR sendbuffer[BUFFER_LENGTH] = {};
 	INT iSendResult = 0;
 	
+	ofstream logS("server_log", ios::app);
+	if (!logS.is_open())
+	{
+		cout << "Faild to open log" << endl;
+	}
+
 	do
 	{
+		memset(recvbuffer, 0, BUFFER_LENGTH);
+
 		iResult = recv(client_socket, recvbuffer, BUFFER_LENGTH, 0);
 		dwError = WSAGetLastError();
 		if (iResult > 0)
 		{
 			cout << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
+			logS << "RECV: " << recvbuffer << "(" << iResult << " Bytes)" << endl;
 			iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
 			dwError = WSAGetLastError();
 			if (iSendResult == SOCKET_ERROR)
 			{
 				cout << FormatLastError(dwError, szError) << endl;
 				cout << "Send failed with error: " << WSAGetLastError() << endl;
+				logS << "ERROR: Send failed with error: " << dwError << endl;
 				closesocket(client_socket);
 			}
-			else cout << "Bytes sent: " << iSendResult << endl;
+			else
+			{
+				cout << "Bytes sent: " << iSendResult << endl;
+				logS << "SEND: Bytes sent: " << recvbuffer << "(" << iSendResult << " bytes)" << endl;
+			}
 		}
-		else if (iResult == 0) cout << "Connection closing..." << endl;
+		else if (iResult == 0)
+		{
+			cout << "Connection closing..." << endl;
+			logS << "INFO: Connection closing..." << endl;
+		}
 		else
 		{
 			cout << FormatLastError(dwError, szError) << endl;
 			cout << "Receive failed with error: " << WSAGetLastError() << endl;
+			logS << "Receive failed with error: " << dwError << endl;
 			closesocket(client_socket);
 		}
 	} while (iResult > 0);
+	logS.close();
 
 	iResult = shutdown(client_socket, SD_BOTH);
 	dwError = WSAGetLastError();
