@@ -80,10 +80,10 @@ void main()
 
 	//5) ќ“правка и получение данных
 		CHAR sendbuffer[BUFFER_LENGTH] = "Hello Server";
-		CHAR recvbuffer[BUFFER_LENGTH] = {};
 
 		do
 		{
+			CHAR recvbuffer[BUFFER_LENGTH] = {};
 			iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
 			if (iResult == SOCKET_ERROR)
 			{
@@ -104,7 +104,10 @@ void main()
 				else cout << FormatLastError(WSAGetLastError(), szError) << endl;
 				//cout << "Receive failed\t" << WSAGetLastError() << endl;
 			//} while (iResult > 0);
+			ZeroMemory(sendbuffer, BUFFER_LENGTH);
+			SetConsoleCP(1251);
 			cin.getline(sendbuffer, BUFFER_LENGTH);
+			SetConsoleCP(866);
 		} while (strcmp(sendbuffer, "exit") != 0);
 
 		iResult = shutdown(connect_socket, SD_BOTH);
