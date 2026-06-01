@@ -1,4 +1,5 @@
 //WinSOCK (Windows Sockets)
+#define _WINSOCK_DEPRECATED_NO_WARNINGS 
 
 #ifndef WIN32_LEAN_AND_MEAN		//Для добавления <Windows.h> и <iphplapi.h>
 #define WIN32_LEAN_AND_MEAN
@@ -102,7 +103,7 @@ void main()
 	sockaddr_in client_address;
 	int client_addrlen = sizeof(client_address);
 	client_address.sin_family = AF_INET;
-	SOCKET client_socket = accept(listen_socket, &client_address, &client_addrlen);
+	SOCKET client_socket = accept(listen_socket, (SOCKADDR*)& client_address, &client_addrlen);
 	dwError = WSAGetLastError();
 	if (client_socket == INVALID_SOCKET)
 	{
@@ -111,8 +112,12 @@ void main()
 	}
 
 	//6.1) Получаем информацию о сокете клиента
-	CHAR* clientIP = inet_ntoa(client_address);
+	CHAR* clientIP = inet_ntoa(client_address.sin_addr);
+	cout << clientIP << endl;
 
+	int clientPort = ntohs(client_address.sin_port);
+	cout << clientPort << endl;
+	
 	//7) Получение и отправка данных
 	CHAR recvbuffer[BUFFER_LENGTH] = {};
 	CHAR sendbuffer[BUFFER_LENGTH] = {};
