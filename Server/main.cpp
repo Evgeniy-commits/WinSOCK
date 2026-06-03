@@ -14,6 +14,7 @@
 #include<iphlpapi.h>
 
 #include<FormatLastError.h>
+#include<Messages.h>
 
 using namespace std;
 
@@ -22,7 +23,7 @@ using namespace std;
 
 #define PORT			"27015"
 #define BUFFER_LENGTH	1500
-#define MAX_CONNECTIONS	5
+#define MAX_CONNECTIONS	3
 
 SOCKET sockets[MAX_CONNECTIONS] = {};
 DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
@@ -140,15 +141,30 @@ void main()
 		{
 			sockets[i] = client_socket;
 			hThreads[i] = CreateThread
-									(
-										NULL,			//Security attributes
-										0,				//Stack size
-										(LPTHREAD_START_ROUTINE)ClientHandle,	//указатель на ф-ю, кот. будет вып-ся в потоке
-										(LPVOID)sockets[i],
-										0,
-										&dwThreadIDs[i]
-									);
+			(
+				NULL,			//Security attributes
+				0,				//Stack size
+				(LPTHREAD_START_ROUTINE)ClientHandle,	//указатель на ф-ю, кот. будет вып-ся в потоке
+				(LPVOID)sockets[i],
+				0,
+				&dwThreadIDs[i]
+			);
 			i++;
+		}
+		else
+		{
+			CHAR recv_buffer[BUFFER_LENGTH] = {};
+			iResult = recv(client_socket, recv_buffer, BUFFER_LENGTH, NULL);
+			/*if (iResult != 0)
+			{
+				FormatLastError(WSAGetLastError(), szError);
+				cout << szError << endl;
+			}
+			else*/ cout << recv_buffer << endl;
+			//CHAR szDeclainMessage[] = ;
+			iResult = send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
+			shutdown(client_socket, SD_BOTH);
+			closesocket(client_socket);
 		}
 	} while (true);
 
@@ -168,10 +184,10 @@ VOID ClientHandle(SOCKET client_socket)
 	client_address.sin_family = AF_INET;
 	INT client_addresslen = sizeof(client_address);
 	getpeername(client_socket, (sockaddr*)&client_address, &client_addresslen);
-	CHAR szName[32] = {};
-	sprintf(szName, "%s : %d\t", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+	CHAR szClient_address[32] = {};
+	sprintf(szClient_address, "%s : %d - ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 
-	cout << "Client connected" << szName << "\tSOCKET\t" << client_socket << endl;
+	cout << "Client connected" << szClient_address << "SOCKET\t" << client_socket << endl;
 	INT iResult = 0;
 	DWORD dwError;
 	CHAR szError[256] = {};
