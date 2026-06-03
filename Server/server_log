@@ -56,3 +56,40 @@ SEND: Bytes sent: привет сервер(13 bytes)
 RECV: ура(3 Bytes)
 SEND: Bytes sent: ура(3 bytes)
 INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+38
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: dsavf(5 Bytes)
+SEND: Bytes sent: dsavf(5 bytes)
+INFO: Connection closing...
+Receive failed with error: 10038
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+Receive failed with error: 10038
+Receive failed with error: 10038
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: fdbadb(6 Bytes)
+SEND: Bytes sent: fdbadb(6 bytes)
+RECV: jhcgm(5 Bytes)
+SEND: Bytes sent: jhcgm(5 bytes)
+Receive failed with error: 10054
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: first(5 Bytes)
+SEND: Bytes sent: first(5 bytes)
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: second(6 Bytes)
+SEND: Bytes sent: second(6 bytes)
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: third(5 Bytes)
+SEND: Bytes sent: third(5 bytes)
+RECV: hello first(11 Bytes)
+SEND: Bytes sent: hello first(11 bytes)
+INFO: Connection closing...
+INFO: Connection closing...
+INFO: Connection closing...
