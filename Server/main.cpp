@@ -28,6 +28,12 @@ SOCKET sockets[MAX_CONNECTIONS] = {};
 DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
 HANDLE hThreads[MAX_CONNECTIONS] = {};
 
+//struct ClientParameters
+//{
+//	SOCKET client_socket;
+//	sockaddr_in client_address;
+//};
+
 VOID ClientHandle(SOCKET client_socket);
 
 void main()
@@ -158,7 +164,14 @@ void main()
 
 VOID ClientHandle(SOCKET client_socket)
 { 
-	cout << "Client connected" << endl;
+	sockaddr_in client_address;
+	client_address.sin_family = AF_INET;
+	INT client_addresslen = sizeof(client_address);
+	getpeername(client_socket, (sockaddr*)&client_address, &client_addresslen);
+	CHAR szName[32] = {};
+	sprintf(szName, "%s : %d\t", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+
+	cout << "Client connected" << szName << "\tSOCKET\t" << client_socket << endl;
 	INT iResult = 0;
 	DWORD dwError;
 	CHAR szError[256] = {};

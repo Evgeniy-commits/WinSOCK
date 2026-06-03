@@ -93,3 +93,10 @@ SEND: Bytes sent: hello first(11 bytes)
 INFO: Connection closing...
 INFO: Connection closing...
 INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: zcxb (5 Bytes)
+SEND: Bytes sent: zcxb (5 bytes)
+Receive failed with error: 10054
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
