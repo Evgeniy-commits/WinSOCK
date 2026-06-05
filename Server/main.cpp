@@ -243,9 +243,13 @@ VOID ClientHandle(LPVOID lpfreeSl)
 		}
 		else if (iResult == 0)
 		{
-			i--;
+			//i--;
 			cout << "Connection closing..." << endl;
+			cout << "Client unconnected" << szClient_address << "SOCKET\t" << client_socket << endl;
 			logS << "INFO: Connection closing..." << endl;
+			sockets[i] = INVALID_SOCKET;
+			hThreads[i] = NULL;
+			dwThreadIDs[i] = 0;
 		}
 		else
 		{
@@ -263,7 +267,4 @@ VOID ClientHandle(LPVOID lpfreeSl)
 		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;
 
 	closesocket(client_socket);
-	sockets[i] = INVALID_SOCKET;
-	hThreads[i] = NULL;
-	dwThreadIDs[i] = 0;
 }
