@@ -35,7 +35,7 @@ HANDLE hThreads[MAX_CONNECTIONS] = {};
 //	sockaddr_in client_address;
 //};
 
-VOID ClientHandle(SOCKET client_socket);
+VOID ClientHandle(LPVOID lpfreeSl);
 
 void main()
 {
@@ -43,7 +43,7 @@ void main()
 	cout << "SERVER" << endl;
 	DWORD dwError = 0;
 	CHAR szError[256] = {};
-
+	
 	//INIT WinSOCK
 	WSADATA wsaData;
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -113,7 +113,6 @@ void main()
 	}
 
 	//6) Обработка соединений от клиентов:
-	INT i = 0;	//счетчик клиентов
 	do
 	{
 		sockaddr_in client_address;
@@ -137,19 +136,30 @@ void main()
 
 		//6.2 Запускаем взаимодействие с клиентом
 		//ClientHandle(client_socket);
-		if (i < MAX_CONNECTIONS)
+
+		//Ищем свободный слот
+		int freeSl = -1;
+		for (int j = 0; j < MAX_CONNECTIONS; j++)
 		{
-			sockets[i] = client_socket;
-			hThreads[i] = CreateThread
+			if (sockets[j] == INVALID_SOCKET || hThreads[j] == NULL)
+			{
+				freeSl = j;
+				break;
+			}
+		}
+
+		if (freeSl != -1)
+		{
+			sockets[freeSl] = client_socket;
+			hThreads[freeSl] = CreateThread
 			(
 				NULL,			//Security attributes
 				0,				//Stack size
 				(LPTHREAD_START_ROUTINE)ClientHandle,	//указатель на ф-ю, кот. будет вып-ся в потоке
-				(LPVOID)sockets[i],
+				(LPVOID)freeSl,
 				0,
-				&dwThreadIDs[i]
+				&dwThreadIDs[freeSl]
 			);
-			i++;
 		}
 		else
 		{
@@ -178,8 +188,11 @@ void main()
 	WSACleanup();
 }
 
-VOID ClientHandle(SOCKET client_socket)
+VOID ClientHandle(LPVOID lpfreeSl)
 { 
+	INT i = (INT) lpfreeSl;	//счетчик клиентов
+	SOCKET client_socket = sockets[i];
+
 	sockaddr_in client_address;
 	client_address.sin_family = AF_INET;
 	INT client_addresslen = sizeof(client_address);
@@ -230,6 +243,7 @@ VOID ClientHandle(SOCKET client_socket)
 		}
 		else if (iResult == 0)
 		{
+			i--;
 			cout << "Connection closing..." << endl;
 			logS << "INFO: Connection closing..." << endl;
 		}
@@ -249,4 +263,7 @@ VOID ClientHandle(SOCKET client_socket)
 		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;
 
 	closesocket(client_socket);
+	sockets[i] = INVALID_SOCKET;
+	hThreads[i] = NULL;
+	dwThreadIDs[i] = 0;
 }
