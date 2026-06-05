@@ -301,3 +301,14 @@ SEND: Bytes sent: hxgn(4 bytes)
 Receive failed with error: 10054
 Receive failed with error: 10054
 Receive failed with error: 10054
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+INFO: Connection closing...
+RECV: Hello Server(12 Bytes)
+SEND: Bytes sent: Hello Server(12 bytes)
+RECV: fdvsfdbf(8 Bytes)
+SEND: Bytes sent: fdvsfdbf(8 bytes)
