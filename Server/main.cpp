@@ -25,6 +25,7 @@ using namespace std;
 #define BUFFER_LENGTH	1500
 #define MAX_CONNECTIONS	3
 
+INT g_ActiveClient = 0;
 SOCKET sockets[MAX_CONNECTIONS] = {};
 DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
 HANDLE hThreads[MAX_CONNECTIONS] = {};
@@ -36,6 +37,8 @@ HANDLE hThreads[MAX_CONNECTIONS] = {};
 //};
 
 VOID ClientHandle(LPVOID lpfreeSl);
+//VOID Release(SOCKET client_socket);
+VOID ShowActiveClients();
 
 void main()
 {
@@ -115,6 +118,7 @@ void main()
 	//6) Обработка соединений от клиентов:
 	do
 	{
+		ShowActiveClients();
 		sockaddr_in client_address;
 		int client_addrlen = sizeof(client_address);
 		client_address.sin_family = AF_INET;
@@ -137,29 +141,20 @@ void main()
 		//6.2 Запускаем взаимодействие с клиентом
 		//ClientHandle(client_socket);
 
-		//Ищем свободный слот
-		int freeSl = -1;
-		for (int j = 0; j < MAX_CONNECTIONS; j++)
+		if (g_ActiveClient < MAX_CONNECTIONS)
 		{
-			if (sockets[j] == INVALID_SOCKET || hThreads[j] == NULL)
-			{
-				freeSl = j;
-				break;
-			}
-		}
-
-		if (freeSl != -1)
-		{
-			sockets[freeSl] = client_socket;
-			hThreads[freeSl] = CreateThread
+			sockets[g_ActiveClient] = client_socket;
+			cout << client_socket << "\t" << sockets[g_ActiveClient] << endl;
+			hThreads[g_ActiveClient] = CreateThread
 			(
 				NULL,			//Security attributes
 				0,				//Stack size
 				(LPTHREAD_START_ROUTINE)ClientHandle,	//указатель на ф-ю, кот. будет вып-ся в потоке
-				(LPVOID)freeSl,
+				(LPVOID)g_ActiveClient,
 				0,
-				&dwThreadIDs[freeSl]
+				&dwThreadIDs[g_ActiveClient]
 			);
+			g_ActiveClient++;
 		}
 		else
 		{
@@ -177,7 +172,7 @@ void main()
 			closesocket(client_socket);
 		}
 	} while (true);
-
+	WaitForMultipleObjects(MAX_CONNECTIONS, hThreads, TRUE, INFINITE);
 
 	/*iResult = shutdown(listen_socket, SD_BOTH);
 	dwError = WSAGetLastError();
@@ -188,9 +183,31 @@ void main()
 	WSACleanup();
 }
 
-VOID ClientHandle(LPVOID lpfreeSl)
+INT GetSlotIndex(DWORD dwID)
+{
+	for (int i = 0; i < MAX_CONNECTIONS; i++)
+	{
+		if (dwThreadIDs[i] == dwID) return i;
+	}
+}
+
+VOID Shift(INT start)
+{
+	for (INT i = 0; i < MAX_CONNECTIONS; i++)
+	{
+		sockets[i] = sockets[i + 1];
+		hThreads[i] = hThreads[i + 1];
+		dwThreadIDs[i] = dwThreadIDs[i + 1];
+	}
+	sockets[MAX_CONNECTIONS - 1] = NULL;
+	hThreads[MAX_CONNECTIONS - 1] = NULL;
+	dwThreadIDs[MAX_CONNECTIONS - 1] = NULL;
+	g_ActiveClient--;
+}
+
+VOID ClientHandle(LPVOID g_ActiveClient)
 { 
-	INT i = (INT) lpfreeSl;	//счетчик клиентов
+	INT i = (INT)g_ActiveClient;	//счетчик клиентов
 	SOCKET client_socket = sockets[i];
 
 	sockaddr_in client_address;
@@ -243,13 +260,10 @@ VOID ClientHandle(LPVOID lpfreeSl)
 		}
 		else if (iResult == 0)
 		{
-			//i--;
 			cout << "Connection closing..." << endl;
 			cout << "Client unconnected" << szClient_address << "SOCKET\t" << client_socket << endl;
 			logS << "INFO: Connection closing..." << endl;
-			sockets[i] = INVALID_SOCKET;
-			hThreads[i] = NULL;
-			dwThreadIDs[i] = 0;
+			
 		}
 		else
 		{
@@ -259,6 +273,9 @@ VOID ClientHandle(LPVOID lpfreeSl)
 			closesocket(client_socket);
 		}
 	} while (iResult > 0);
+	DWORD dwID = GetCurrentThreadId();
+	Shift(GetSlotIndex(dwID));
+	cout << szClient_address << " left" << endl;
 	logS.close();
 
 	iResult = shutdown(client_socket, SD_BOTH);
@@ -267,4 +284,38 @@ VOID ClientHandle(LPVOID lpfreeSl)
 		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;
 
 	closesocket(client_socket);
+	ShowActiveClients();
+	ExitThread(0);
+}
+
+//VOID Release(SOCKET client_socket)
+//{
+//	for (int i = 0; i < MAX_CONNECTIONS; i++)
+//	{
+//		if (client_socket == sockets[i])
+//		{
+//			sockets[i] = INVALID_SOCKET;
+//			//hThreads[i] = NULL;
+//			//dwThreadIDs[i] = 0;
+//			for (int j = i; sockets[j] || j < MAX_CONNECTIONS - 1; j++)
+//			{
+//				sockets[j] = sockets[j + 1];
+//				hThreads[j] = hThreads[j + 1];
+//				dwThreadIDs[j] = dwThreadIDs[j + 1];
+//			}
+//		}
+//	}
+//	g_ActiveClient--;
+//	ShowActiveClients();
+//}
+//
+VOID ShowActiveClients()
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO info;
+	GetConsoleScreenBufferInfo(hConsole, &info);
+	COORD cursor = { 1, 25 };
+	SetConsoleCursorPosition(hConsole, cursor);
+	cout << "Количество подключений: " << g_ActiveClient;
+	SetConsoleCursorPosition(hConsole, info.dwCursorPosition);
 }
