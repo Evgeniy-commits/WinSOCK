@@ -10,6 +10,7 @@
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h>
+#include<string>
 
 #include<FormatLastError.h>
 #include<Messages.h>
@@ -26,6 +27,13 @@ void main()
 {
 	setlocale(LC_ALL, "");
 	cout << "CLIENT" << endl;
+
+	//Ввод имени пользователя
+	string nick;
+	cout << "Введите свое имя: "; 
+	getline(cin, nick);
+	cout << endl;
+
 	CHAR szError[256] = {};
 
 	//INIT WinSOCK
@@ -79,8 +87,43 @@ void main()
 			return;
 		}
 
-	//5) ОТправка и получение данных
-		CHAR sendbuffer[BUFFER_LENGTH] = "Hello Server";
+	//5.1) Отправляем имя имя или инфо на сервер
+		string idenMess;
+		if (!nick.empty())
+		{
+			idenMess = nick;
+		}
+		else
+		{
+			sockaddr_in locAddr;
+			INT addrLen = sizeof(locAddr);
+			if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
+			{
+				CHAR locIP[INET_ADDRSTRLEN];
+				inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
+				INT locPort = ntohs(locAddr.sin_port);
+				idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
+			}
+			else
+			{
+				idenMess = "Мы не занем что это!!!";
+			}
+		}
+
+	//5.2) Отправляем идентификацию
+		/*if (iResult == SOCKET_ERROR)
+		{
+			cout << FormatLastError(WSAGetLastError(), szError) << endl;
+			cout << "Send failed:\t" << WSAGetLastError() << endl;
+			closesocket(connect_socket);
+			freeaddrinfo(result);
+			WSACleanup();
+			return;
+		}*/
+
+	//5.3) ОТправка и получение данных
+		CHAR sendbuffer[BUFFER_LENGTH] = "\tHello Server";
+		iResult = send(connect_socket, idenMess.c_str(), idenMess.length(), 0);
 
 		do
 		{
@@ -95,7 +138,7 @@ void main()
 				WSACleanup();
 				return;
 			}
-			cout << "Bytes sent: " << iResult << endl;
+			//cout << "Bytes sent: " << iResult << endl;
 
 			//do
 			//{
@@ -103,9 +146,9 @@ void main()
 			/*DWORD dwError = WSAGetLastError();
 			CHAR szError[256] = {};
 			cout << FormatLastError(dwError, szError) << endl;*/
-			if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)" << endl;
-			else if (result == 0) cout << "Connection closed" << endl;
-			else cout << FormatLastError(WSAGetLastError(), szError) << endl;
+			/*if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)"  << endl;
+			else*/ if (result == 0) cout << "Connection closed" << endl;
+			//else cout << FormatLastError(WSAGetLastError(), szError) << endl;
 				//cout << "Receive failed\t" << WSAGetLastError() << endl;
 			//} while (iResult > 0);
 			if (strcmp(recvbuffer, DECLINE_MESSAGE) == 0)
@@ -115,6 +158,7 @@ void main()
 			}
 			ZeroMemory(sendbuffer, BUFFER_LENGTH);
 			SetConsoleCP(1251);
+			cout << (nick.empty() ? "You" : nick) << "> ";
 			cin.getline(sendbuffer, BUFFER_LENGTH);
 			SetConsoleCP(866);
 		} while (strcmp(sendbuffer, "exit") != 0);
