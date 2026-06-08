@@ -855,3 +855,8 @@ INFO: Connection closing...
 Receive failed with error: 10054
 Receive failed with error: 10054
 Receive failed with error: 10054
+SEND: Bytes sent: Evgen> Hello(0 bytes)
+SEND: Bytes sent: Ivan> World(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+Receive failed with error: 10054
