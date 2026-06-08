@@ -39,6 +39,7 @@ HANDLE hThreads[MAX_CONNECTIONS] = {};
 VOID ClientHandle(LPVOID lpfreeSl);
 //VOID Release(SOCKET client_socket);
 VOID ShowActiveClients();
+VOID Broadcast(CHAR sz_message[], DWORD dwID);
 
 void main()
 {
@@ -215,7 +216,10 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	INT client_addresslen = sizeof(client_address);
 	getpeername(client_socket, (sockaddr*)&client_address, &client_addresslen);
 	CHAR szClient_address[32] = {};
+	CHAR szClient_connected[32] = {};
 	sprintf(szClient_address, "%s : %d - ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+	//sprintf(szClient_connected, "%s CONNECTED - ", szClient_address);
+	//Broadcast(szClient_connected, GetCurrentThreadId());
 
 	cout << "Client connected" << szClient_address << "SOCKET\t" << client_socket << endl;
 	INT iResult = 0;
@@ -242,8 +246,11 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 		if (iResult > 0)
 		{
 			cout << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
+			sprintf(sendbuffer, "%s %s", szClient_address, recvbuffer);
+			Broadcast(recvbuffer, GetCurrentThreadId());
 			logS << "RECV: " << recvbuffer << "(" << iResult << " Bytes)" << endl;
-			iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
+			//iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
+
 			dwError = WSAGetLastError();
 			if (iSendResult == SOCKET_ERROR)
 			{
@@ -288,27 +295,6 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	ExitThread(0);
 }
 
-//VOID Release(SOCKET client_socket)
-//{
-//	for (int i = 0; i < MAX_CONNECTIONS; i++)
-//	{
-//		if (client_socket == sockets[i])
-//		{
-//			sockets[i] = INVALID_SOCKET;
-//			//hThreads[i] = NULL;
-//			//dwThreadIDs[i] = 0;
-//			for (int j = i; sockets[j] || j < MAX_CONNECTIONS - 1; j++)
-//			{
-//				sockets[j] = sockets[j + 1];
-//				hThreads[j] = hThreads[j + 1];
-//				dwThreadIDs[j] = dwThreadIDs[j + 1];
-//			}
-//		}
-//	}
-//	g_ActiveClient--;
-//	ShowActiveClients();
-//}
-//
 VOID ShowActiveClients()
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -318,4 +304,12 @@ VOID ShowActiveClients()
 	SetConsoleCursorPosition(hConsole, cursor);
 	cout << "Количество подключений: " << g_ActiveClient;
 	SetConsoleCursorPosition(hConsole, info.dwCursorPosition);
+}
+
+VOID Broadcast(CHAR sz_message[], DWORD dwID)
+{
+	for (INT i = 0; i < g_ActiveClient; i++)
+	{
+		if (dwThreadIDs[i] != dwID) send(sockets[i], sz_message, strlen(sz_message), 0);
+	}
 }

@@ -22,17 +22,12 @@ using namespace std;
 
 #define PORT	"27015"
 #define BUFFER_LENGTH	1500
+VOID Recieve(SOCKET connect_socket);
 
 void main()
 {
 	setlocale(LC_ALL, "");
 	cout << "CLIENT" << endl;
-
-	//Ввод имени пользователя
-	string nick;
-	cout << "Введите свое имя: "; 
-	getline(cin, nick);
-	cout << endl;
 
 	CHAR szError[256] = {};
 
@@ -87,28 +82,34 @@ void main()
 			return;
 		}
 
-	//5.1) Отправляем имя имя или инфо на сервер
-		string idenMess;
-		if (!nick.empty())
-		{
-			idenMess = nick;
-		}
-		else
-		{
-			sockaddr_in locAddr;
-			INT addrLen = sizeof(locAddr);
-			if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
-			{
-				CHAR locIP[INET_ADDRSTRLEN];
-				inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
-				INT locPort = ntohs(locAddr.sin_port);
-				idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
-			}
-			else
-			{
-				idenMess = "Мы не занем что это!!!";
-			}
-		}
+	//Ввод имени пользователя
+	//	string nick;
+	//	cout << "Введите свое имя: ";
+	//	getline(cin, nick);
+	//	cout << endl;
+
+	////5.1) Отправляем имя имя или инфо на сервер
+	//	string idenMess;
+	//	if (!nick.empty())
+	//	{
+	//		idenMess = nick;
+	//	}
+	//	else
+	//	{
+	//		sockaddr_in locAddr;
+	//		INT addrLen = sizeof(locAddr);
+	//		if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
+	//		{
+	//			CHAR locIP[INET_ADDRSTRLEN];
+	//			inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
+	//			INT locPort = ntohs(locAddr.sin_port);
+	//			idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
+	//		}
+	//		else
+	//		{
+	//			idenMess = "Мы не занем что это!!!";
+	//		}
+	//	}
 
 	//5.2) Отправляем идентификацию
 		/*if (iResult == SOCKET_ERROR)
@@ -122,13 +123,23 @@ void main()
 		}*/
 
 	//5.3) ОТправка и получение данных
+		DWORD dwRecieveThreadsID = 0;
+		HANDLE hRecieveThread = CreateThread
+		(
+			NULL,
+			0,
+			(LPTHREAD_START_ROUTINE)Recieve,
+			(LPVOID)connect_socket,
+			0,
+			&dwRecieveThreadsID
+		);
 		CHAR sendbuffer[BUFFER_LENGTH] = "\tHello Server";
-		iResult = send(connect_socket, idenMess.c_str(), idenMess.length(), 0);
+		//iResult = send(connect_socket, sendbuffer, BUFFER_LENGTH, 0);
 
 		do
 		{
 			CHAR recvbuffer[BUFFER_LENGTH] = {};
-			iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
+			iResult = send(connect_socket, sendbuffer, BUFFER_LENGTH, 0);
 			if (iResult == SOCKET_ERROR)
 			{
 				cout << FormatLastError(WSAGetLastError(), szError) << endl;
@@ -139,26 +150,11 @@ void main()
 				return;
 			}
 			//cout << "Bytes sent: " << iResult << endl;
-
-			//do
-			//{
-			iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
-			/*DWORD dwError = WSAGetLastError();
-			CHAR szError[256] = {};
-			cout << FormatLastError(dwError, szError) << endl;*/
-			/*if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)"  << endl;
-			else*/ if (result == 0) cout << "Connection closed" << endl;
-			//else cout << FormatLastError(WSAGetLastError(), szError) << endl;
-				//cout << "Receive failed\t" << WSAGetLastError() << endl;
-			//} while (iResult > 0);
-			if (strcmp(recvbuffer, DECLINE_MESSAGE) == 0)
-			{
-				system("PAUSE");
-				break;
-			}
+			
+			
 			ZeroMemory(sendbuffer, BUFFER_LENGTH);
 			SetConsoleCP(1251);
-			cout << (nick.empty() ? "You" : nick) << "> ";
+			//cout << (nick.empty() ? "You" : nick) << "> ";
 			cin.getline(sendbuffer, BUFFER_LENGTH);
 			SetConsoleCP(866);
 		} while (strcmp(sendbuffer, "exit") != 0);
@@ -172,6 +168,32 @@ void main()
 			closesocket(connect_socket);
 			freeaddrinfo(result);
 			WSACleanup();
+}
+
+VOID Recieve(SOCKET connect_socket)
+{
+	DWORD dwError = 0;
+	CHAR szError[256] = {};
+	CHAR recvbuffer[BUFFER_LENGTH] = {};
+	INT iResult = 0;
+
+	do
+	{
+		ZeroMemory(recvbuffer, sizeof(recvbuffer));
+		iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
+		/*DWORD dwError = WSAGetLastError();
+		CHAR szError[256] = {};
+		cout << FormatLastError(dwError, szError) << endl;*/
+		if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)" << endl;
+		//else if (result == 0) cout << "Connection closed" << endl;
+		else cout << FormatLastError(WSAGetLastError(), szError) << endl;
+		//cout << "Receive failed\t" << WSAGetLastError() << endl;
+	} while (true);
+	if (strcmp(recvbuffer, DECLINE_MESSAGE) == 0)
+	{
+		system("PAUSE");
+		//break;
+	}
 }
 
 //FORMAT_MESSAGE_ALLOCATE_BUFFER — просит систему выделить память для буфера автоматически.
