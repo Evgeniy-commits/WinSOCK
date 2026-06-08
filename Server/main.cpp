@@ -46,7 +46,7 @@ void main()
 	cout << "SERVER" << endl;
 	DWORD dwError = 0;
 	CHAR szError[256] = {};
-	
+
 	//INIT WinSOCK
 	WSADATA wsaData;
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -132,10 +132,10 @@ void main()
 
 		//6.1) Получаем информацию о сокете клиента
 		CHAR* clientIP = inet_ntoa(client_address.sin_addr);
-		cout << clientIP << endl;
+		//cout << clientIP << endl;
 
 		int clientPort = ntohs(client_address.sin_port);
-		cout << clientPort << endl;
+		//cout << clientPort << endl;
 
 
 		//6.2 Запускаем взаимодействие с клиентом
@@ -144,7 +144,7 @@ void main()
 		if (g_ActiveClient < MAX_CONNECTIONS)
 		{
 			sockets[g_ActiveClient] = client_socket;
-			cout << client_socket << "\t" << sockets[g_ActiveClient] << endl;
+			//cout << client_socket << "\t" << sockets[g_ActiveClient] << endl;
 			hThreads[g_ActiveClient] = CreateThread
 			(
 				NULL,			//Security attributes
@@ -165,7 +165,8 @@ void main()
 				FormatLastError(WSAGetLastError(), szError);
 				cout << szError << endl;
 			}
-			else*/ cout << recv_buffer << endl;
+			else*/ 
+			cout << recv_buffer << endl;
 			//CHAR szDeclainMessage[] = ;
 			iResult = send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
 			shutdown(client_socket, SD_BOTH);
@@ -193,7 +194,7 @@ INT GetSlotIndex(DWORD dwID)
 
 VOID Shift(INT start)
 {
-	for (INT i = 0; i < MAX_CONNECTIONS; i++)
+	for (INT i = start; i < MAX_CONNECTIONS; i++)
 	{
 		sockets[i] = sockets[i + 1];
 		hThreads[i] = hThreads[i + 1];
@@ -203,6 +204,26 @@ VOID Shift(INT start)
 	hThreads[MAX_CONNECTIONS - 1] = NULL;
 	dwThreadIDs[MAX_CONNECTIONS - 1] = NULL;
 	g_ActiveClient--;
+}
+
+VOID SendingMess(SOCKET sender_socket, CONST CHAR* mess, INT messLen)
+{
+	CHAR szError[256] = {};
+	for (int i = 0; i < g_ActiveClient; i++)
+	{
+		if (sockets[i] != INVALID_SOCKET && sockets[i] != sender_socket)
+		{
+			INT sResult = send(sockets[i], mess, messLen, 0);
+				if (sResult == SOCKET_ERROR) 
+				{
+					DWORD dwError = WSAGetLastError();
+					cout << "Broadcast send failed to client " << i << " with error: "
+						<< FormatLastError(dwError, szError) << endl;
+					closesocket(sockets[i]);
+					sockets[i] = INVALID_SOCKET;
+				}
+		}
+	}
 }
 
 VOID ClientHandle(LPVOID g_ActiveClient)
@@ -217,7 +238,7 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	CHAR szClient_address[32] = {};
 	sprintf(szClient_address, "%s : %d - ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 
-	cout << "Client connected" << szClient_address << "SOCKET\t" << client_socket << endl;
+	cout << "Client connected " << szClient_address << "SOCKET\t" << client_socket << endl;
 	INT iResult = 0;
 	DWORD dwError;
 	CHAR szError[256] = {};
@@ -235,7 +256,7 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	{
 		CHAR sendbuffer[BUFFER_LENGTH] = {};
 		CHAR recvbuffer[BUFFER_LENGTH] = {};
-		memset(recvbuffer, 0, BUFFER_LENGTH);
+		//memset(recvbuffer, 0, BUFFER_LENGTH);
 
 		iResult = recv(client_socket, recvbuffer, BUFFER_LENGTH, 0);
 		dwError = WSAGetLastError();
@@ -243,6 +264,9 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 		{
 			cout << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
 			logS << "RECV: " << recvbuffer << "(" << iResult << " Bytes)" << endl;
+
+			//SendingMess(client_socket, recvbuffer, iResult);
+
 			iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
 			dwError = WSAGetLastError();
 			if (iSendResult == SOCKET_ERROR)
@@ -288,27 +312,6 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	ExitThread(0);
 }
 
-//VOID Release(SOCKET client_socket)
-//{
-//	for (int i = 0; i < MAX_CONNECTIONS; i++)
-//	{
-//		if (client_socket == sockets[i])
-//		{
-//			sockets[i] = INVALID_SOCKET;
-//			//hThreads[i] = NULL;
-//			//dwThreadIDs[i] = 0;
-//			for (int j = i; sockets[j] || j < MAX_CONNECTIONS - 1; j++)
-//			{
-//				sockets[j] = sockets[j + 1];
-//				hThreads[j] = hThreads[j + 1];
-//				dwThreadIDs[j] = dwThreadIDs[j + 1];
-//			}
-//		}
-//	}
-//	g_ActiveClient--;
-//	ShowActiveClients();
-//}
-//
 VOID ShowActiveClients()
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);

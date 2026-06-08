@@ -11,6 +11,8 @@
 #include<WS2tcpip.h>
 #include<iphlpapi.h>
 #include<string>
+#include<chrono>
+#include<thread>
 
 #include<FormatLastError.h>
 #include<Messages.h>
@@ -31,7 +33,9 @@ void main()
 	//Ввод имени пользователя
 	string nick;
 	cout << "Введите свое имя: "; 
+	SetConsoleCP(1251);
 	getline(cin, nick);
+	SetConsoleCP(866);
 	cout << endl;
 
 	CHAR szError[256] = {};
@@ -123,12 +127,24 @@ void main()
 
 	//5.3) ОТправка и получение данных
 		CHAR sendbuffer[BUFFER_LENGTH] = "\tHello Server";
-		iResult = send(connect_socket, idenMess.c_str(), idenMess.length(), 0);
+		//iResult = send(connect_socket, idenMess.c_str(), idenMess.length(), 0);
+		
+		// Время в миллисекундах между периодическими запросами (например, каждые 5 секунд)
+		const auto UPDATE_INTERVAL = std::chrono::milliseconds(5000);
+		auto lastUpdateTime = std::chrono::steady_clock::now();
 
 		do
 		{
 			CHAR recvbuffer[BUFFER_LENGTH] = {};
-			iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
+			string message;
+			SetConsoleCP(1251);
+			cout << (nick.empty() ? "You" : nick) << "> ";
+			cin.getline(sendbuffer, BUFFER_LENGTH);
+			SetConsoleCP(866);
+			message += sendbuffer;
+			(!nick.empty()) ? message = nick + "> " : message = idenMess + "> ";
+			
+			iResult = send(connect_socket, message.c_str(), message.length(), 0);
 			if (iResult == SOCKET_ERROR)
 			{
 				cout << FormatLastError(WSAGetLastError(), szError) << endl;
@@ -143,11 +159,12 @@ void main()
 			//do
 			//{
 			iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
+			//cout << recvbuffer << endl;
 			/*DWORD dwError = WSAGetLastError();
 			CHAR szError[256] = {};
 			cout << FormatLastError(dwError, szError) << endl;*/
 			/*if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)"  << endl;
-			else*/ if (result == 0) cout << "Connection closed" << endl;
+			else*/ if (iResult == 0) cout << "Connection closed" << endl;
 			//else cout << FormatLastError(WSAGetLastError(), szError) << endl;
 				//cout << "Receive failed\t" << WSAGetLastError() << endl;
 			//} while (iResult > 0);
@@ -157,10 +174,21 @@ void main()
 				break;
 			}
 			ZeroMemory(sendbuffer, BUFFER_LENGTH);
-			SetConsoleCP(1251);
-			cout << (nick.empty() ? "You" : nick) << "> ";
-			cin.getline(sendbuffer, BUFFER_LENGTH);
-			SetConsoleCP(866);
+			//// Проверка, прошло ли достаточно времени для отправки обновления
+			//auto currentTime = std::chrono::steady_clock::now();
+			//if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
+			//	// Отправляем пустой запрос для обновления данных
+			//	std::string emptyMessage = "";
+			//	iResult = send(connect_socket, emptyMessage.c_str(), emptyMessage.length(), 0);
+			//	if (iResult == SOCKET_ERROR) {
+			//		cout << FormatLastError(WSAGetLastError(), szError) << endl;
+			//		cout << "Periodic update send failed: " << WSAGetLastError() << endl;
+			//	}
+			//	else {
+			//		cout << "Sent periodic update request" << endl;
+			//	}
+			//	lastUpdateTime = currentTime; // Обновляем время последней отправки
+			//}
 		} while (strcmp(sendbuffer, "exit") != 0);
 
 		iResult = shutdown(connect_socket, SD_BOTH);
