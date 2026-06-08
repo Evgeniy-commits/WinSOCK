@@ -12,6 +12,8 @@
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<iphlpapi.h>
+#include<mutex>
+#include<vector>
 
 #include<FormatLastError.h>
 #include<Messages.h>
@@ -30,14 +32,11 @@ SOCKET sockets[MAX_CONNECTIONS] = {};
 DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
 HANDLE hThreads[MAX_CONNECTIONS] = {};
 
-//struct ClientParameters
-//{
-//	SOCKET client_socket;
-//	sockaddr_in client_address;
-//};
+mutex clientsMutex;  // ћьютекс дл€ защиты списка клиентов
+vector<SOCKET> activeClients;  // ƒинамический список активных клиентов
 
 VOID ClientHandle(LPVOID lpfreeSl);
-//VOID Release(SOCKET client_socket);
+VOID BroadcastMessage(SOCKET sender_socket, const CHAR* message, INT messageLen);
 VOID ShowActiveClients();
 
 void main()
@@ -132,19 +131,21 @@ void main()
 
 		//6.1) ѕолучаем информацию о сокете клиента
 		CHAR* clientIP = inet_ntoa(client_address.sin_addr);
-		//cout << clientIP << endl;
-
+		
 		int clientPort = ntohs(client_address.sin_port);
-		//cout << clientPort << endl;
-
-
+	
 		//6.2 «апускаем взаимодействие с клиентом
-		//ClientHandle(client_socket);
+		if (client_socket != INVALID_SOCKET)
+		{
+			{
+				lock_guard<mutex> lock(clientsMutex);
+				activeClients.push_back(client_socket);
+			}
+		}
 
 		if (g_ActiveClient < MAX_CONNECTIONS)
 		{
 			sockets[g_ActiveClient] = client_socket;
-			//cout << client_socket << "\t" << sockets[g_ActiveClient] << endl;
 			hThreads[g_ActiveClient] = CreateThread
 			(
 				NULL,			//Security attributes
@@ -160,14 +161,15 @@ void main()
 		{
 			CHAR recv_buffer[BUFFER_LENGTH] = {};
 			iResult = recv(client_socket, recv_buffer, BUFFER_LENGTH, NULL);
-			/*if (iResult != 0)
+			if (iResult != 0)
 			{
 				FormatLastError(WSAGetLastError(), szError);
 				cout << szError << endl;
 			}
-			else*/ 
-			cout << recv_buffer << endl;
-			//CHAR szDeclainMessage[] = ;
+			else
+			{
+				cout << recv_buffer << endl;
+			}
 			iResult = send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
 			shutdown(client_socket, SD_BOTH);
 			closesocket(client_socket);
@@ -175,11 +177,6 @@ void main()
 	} while (true);
 	WaitForMultipleObjects(MAX_CONNECTIONS, hThreads, TRUE, INFINITE);
 
-	/*iResult = shutdown(listen_socket, SD_BOTH);
-	dwError = WSAGetLastError();
-	if (iResult == SOCKET_ERROR) 
-		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;*/
-	
 	closesocket(listen_socket);
 	WSACleanup();
 }
@@ -206,25 +203,37 @@ VOID Shift(INT start)
 	g_ActiveClient--;
 }
 
-VOID SendingMess(SOCKET sender_socket, CONST CHAR* mess, INT messLen)
+VOID BroadcastMessage(SOCKET sender_socket, const CHAR* mess, INT messLen)
 {
-	CHAR szError[256] = {};
-	for (int i = 0; i < g_ActiveClient; i++)
+	lock_guard<mutex> lock(clientsMutex);	//ћеханизм блокировки - пока clientsMutex другие потоки не смогут
+											//захватить activeClients
+	for (SOCKET client : activeClients)
 	{
-		if (sockets[i] != INVALID_SOCKET && sockets[i] != sender_socket)
+		if (client != INVALID_SOCKET && client != sender_socket)
 		{
-			INT sResult = send(sockets[i], mess, messLen, 0);
-				if (sResult == SOCKET_ERROR) 
+			INT result = send(client, mess, messLen, 0);
+			if (result == SOCKET_ERROR)
+			{
+				DWORD error = WSAGetLastError();
+				CHAR errorMsg[256] = {};
+				cout << "Broadcast failed to client: "
+					<< FormatLastError(error, errorMsg) << endl;
+				// ”дал€ем нерабочий сокет
+				vector<SOCKET>::iterator it = find(activeClients.begin(), activeClients.end(), client);
+				if (it != activeClients.end()) 
 				{
-					DWORD dwError = WSAGetLastError();
-					cout << "Broadcast send failed to client " << i << " with error: "
-						<< FormatLastError(dwError, szError) << endl;
-					closesocket(sockets[i]);
-					sockets[i] = INVALID_SOCKET;
+					activeClients.erase(it);
+					closesocket(client);
 				}
+			}
 		}
 	}
 }
+
+//std::lock_guard Ч шаблонный класс из стандартной библиотеки C++ (заголовок <mutex>), реализующий идиому RAII(Resource Acquisition Is Initialization).
+//<std::mutex> Ч параметр шаблона : указывает, что lock_guard будет работать с мьютексом типа std::mutex.
+//lock Ч им€ создаваемого объекта(можно выбрать любое).
+//clientsMutex Ч существующий объект типа std::mutex, который нужно заблокировать.
 
 VOID ClientHandle(LPVOID g_ActiveClient)
 { 
@@ -256,18 +265,16 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	{
 		CHAR sendbuffer[BUFFER_LENGTH] = {};
 		CHAR recvbuffer[BUFFER_LENGTH] = {};
-		//memset(recvbuffer, 0, BUFFER_LENGTH);
+		memset(recvbuffer, 0, BUFFER_LENGTH);
 
 		iResult = recv(client_socket, recvbuffer, BUFFER_LENGTH, 0);
 		dwError = WSAGetLastError();
 		if (iResult > 0)
 		{
-			cout << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
-			logS << "RECV: " << recvbuffer << "(" << iResult << " Bytes)" << endl;
+			// –ассылаем сообщение всем клиентам
+			BroadcastMessage(client_socket, recvbuffer, iResult);
+			cout << recvbuffer << endl;
 
-			//SendingMess(client_socket, recvbuffer, iResult);
-
-			iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
 			dwError = WSAGetLastError();
 			if (iSendResult == SOCKET_ERROR)
 			{
@@ -278,7 +285,6 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 			}
 			else
 			{
-				cout << "Bytes sent: " << iSendResult << endl;
 				logS << "SEND: Bytes sent: " << recvbuffer << "(" << iSendResult << " bytes)" << endl;
 			}
 		}
@@ -308,7 +314,7 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;
 
 	closesocket(client_socket);
-	ShowActiveClients();
+	//ShowActiveClients();
 	ExitThread(0);
 }
 

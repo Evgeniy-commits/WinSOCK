@@ -13,6 +13,8 @@
 #include<string>
 #include<chrono>
 #include<thread>
+#include<atomic>
+#include<mutex>
 
 #include<FormatLastError.h>
 #include<Messages.h>
@@ -25,18 +27,13 @@ using namespace std;
 #define PORT	"27015"
 #define BUFFER_LENGTH	1500
 
+VOID receiveThread(SOCKET connect_socket);
+mutex outputMutex;
+
 void main()
 {
 	setlocale(LC_ALL, "");
 	cout << "CLIENT" << endl;
-
-	//Ввод имени пользователя
-	string nick;
-	cout << "Введите свое имя: "; 
-	SetConsoleCP(1251);
-	getline(cin, nick);
-	SetConsoleCP(866);
-	cout << endl;
 
 	CHAR szError[256] = {};
 
@@ -91,31 +88,57 @@ void main()
 			return;
 		}
 
+
+	// Запускаем поток приёма сообщений
+	thread receiver(receiveThread, connect_socket);
+
+	//5.3) ОТправка и получение данных
+	CHAR sendbuffer[BUFFER_LENGTH] = {};
 	//5.1) Отправляем имя имя или инфо на сервер
-		string idenMess;
-		if (!nick.empty())
+	//Ввод имени пользователя
+	string nick;
+	cout << "Введите свое имя: ";
+	SetConsoleCP(1251);
+	getline(cin, nick);
+	SetConsoleCP(866);
+	cout << endl;
+
+	string idenMess;
+	if (!nick.empty())
+	{
+		idenMess = nick;
+	}
+	else
+	{
+		sockaddr_in locAddr;
+		INT addrLen = sizeof(locAddr);
+		if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
 		{
-			idenMess = nick;
+			CHAR locIP[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
+			INT locPort = ntohs(locAddr.sin_port);
+			idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
 		}
 		else
 		{
-			sockaddr_in locAddr;
-			INT addrLen = sizeof(locAddr);
-			if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
-			{
-				CHAR locIP[INET_ADDRSTRLEN];
-				inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
-				INT locPort = ntohs(locAddr.sin_port);
-				idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
-			}
-			else
-			{
-				idenMess = "Мы не занем что это!!!";
-			}
+			idenMess = "Мы не занем что это!!!";
 		}
-
-	//5.2) Отправляем идентификацию
-		/*if (iResult == SOCKET_ERROR)
+	}
+	
+	do
+	{
+		ZeroMemory(sendbuffer, BUFFER_LENGTH);
+		CHAR recvbuffer[BUFFER_LENGTH] = {};
+		string message = "";
+		SetConsoleCP(1251);
+		cout << (nick.empty() ? "You" : nick) << "> ";
+		cin.getline(sendbuffer, BUFFER_LENGTH);
+		SetConsoleCP(866);
+		(!nick.empty()) ? message = nick + "> " : message = idenMess + "> ";
+		message += sendbuffer;
+		
+		iResult = send(connect_socket, message.c_str(), message.length(), 0);
+		if (iResult == SOCKET_ERROR)
 		{
 			cout << FormatLastError(WSAGetLastError(), szError) << endl;
 			cout << "Send failed:\t" << WSAGetLastError() << endl;
@@ -123,83 +146,63 @@ void main()
 			freeaddrinfo(result);
 			WSACleanup();
 			return;
-		}*/
-
-	//5.3) ОТправка и получение данных
-		CHAR sendbuffer[BUFFER_LENGTH] = "\tHello Server";
-		//iResult = send(connect_socket, idenMess.c_str(), idenMess.length(), 0);
-		
-		// Время в миллисекундах между периодическими запросами (например, каждые 5 секунд)
-		const auto UPDATE_INTERVAL = std::chrono::milliseconds(5000);
-		auto lastUpdateTime = std::chrono::steady_clock::now();
-
-		do
-		{
-			CHAR recvbuffer[BUFFER_LENGTH] = {};
-			string message;
-			SetConsoleCP(1251);
-			cout << (nick.empty() ? "You" : nick) << "> ";
-			cin.getline(sendbuffer, BUFFER_LENGTH);
-			SetConsoleCP(866);
-			message += sendbuffer;
-			(!nick.empty()) ? message = nick + "> " : message = idenMess + "> ";
-			
-			iResult = send(connect_socket, message.c_str(), message.length(), 0);
-			if (iResult == SOCKET_ERROR)
-			{
-				cout << FormatLastError(WSAGetLastError(), szError) << endl;
-				cout << "Send failed:\t" << WSAGetLastError() << endl;
-				closesocket(connect_socket);
-				freeaddrinfo(result);
-				WSACleanup();
-				return;
-			}
-			//cout << "Bytes sent: " << iResult << endl;
-
-			//do
-			//{
-			iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
-			//cout << recvbuffer << endl;
-			/*DWORD dwError = WSAGetLastError();
-			CHAR szError[256] = {};
-			cout << FormatLastError(dwError, szError) << endl;*/
-			/*if (iResult > 0) cout << recvbuffer << "(" << iResult << " Bytes)"  << endl;
-			else*/ if (iResult == 0) cout << "Connection closed" << endl;
-			//else cout << FormatLastError(WSAGetLastError(), szError) << endl;
-				//cout << "Receive failed\t" << WSAGetLastError() << endl;
-			//} while (iResult > 0);
-			if (strcmp(recvbuffer, DECLINE_MESSAGE) == 0)
-			{
-				system("PAUSE");
-				break;
-			}
-			ZeroMemory(sendbuffer, BUFFER_LENGTH);
-			//// Проверка, прошло ли достаточно времени для отправки обновления
-			//auto currentTime = std::chrono::steady_clock::now();
-			//if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
-			//	// Отправляем пустой запрос для обновления данных
-			//	std::string emptyMessage = "";
-			//	iResult = send(connect_socket, emptyMessage.c_str(), emptyMessage.length(), 0);
-			//	if (iResult == SOCKET_ERROR) {
-			//		cout << FormatLastError(WSAGetLastError(), szError) << endl;
-			//		cout << "Periodic update send failed: " << WSAGetLastError() << endl;
-			//	}
-			//	else {
-			//		cout << "Sent periodic update request" << endl;
-			//	}
-			//	lastUpdateTime = currentTime; // Обновляем время последней отправки
-			//}
-		} while (strcmp(sendbuffer, "exit") != 0);
-
-		iResult = shutdown(connect_socket, SD_BOTH);
-		if (iResult == SOCKET_ERROR)
-		{
-			cout << FormatLastError(WSAGetLastError(), szError) << endl;
-			cout << "Shutdown failed: " << WSAGetLastError() << endl;
 		}
-			closesocket(connect_socket);
-			freeaddrinfo(result);
-			WSACleanup();
+		
+		//memset(recvbuffer, 0, BUFFER_LENGTH);
+		//iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
+		//cout << recvbuffer << endl;
+		if (iResult == 0) cout << "Connection closed" << endl;
+		
+		if (strcmp(recvbuffer, DECLINE_MESSAGE) == 0)
+		{
+			system("PAUSE");
+			break;
+		}
+	} while (strcmp(sendbuffer, "exit") != 0);
+
+	
+	iResult = shutdown(connect_socket, SD_BOTH);
+	if (iResult == SOCKET_ERROR)
+	{
+		cout << FormatLastError(WSAGetLastError(), szError) << endl;
+		cout << "Shutdown failed: " << WSAGetLastError() << endl;
+	}
+
+	receiver.join();
+
+	closesocket(connect_socket);
+	freeaddrinfo(result);
+	WSACleanup();
+}
+
+// Поток для приёма сообщений от сервера
+VOID receiveThread(SOCKET connect_socket) 
+{
+	CHAR recvbuffer[BUFFER_LENGTH];
+	int iResult;
+
+	while (true) {
+		ZeroMemory(recvbuffer, BUFFER_LENGTH);
+		iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH - 1, 0);
+
+		if (iResult > 0) 
+		{
+			lock_guard<mutex> lock(outputMutex);
+			cout << "\n[SER]" << recvbuffer << endl;
+			//std::cout << (nick.empty() ? "You" : nick) << "> ";
+		}
+		else if (iResult == 0) {
+			cout << "\nConnection closed by server" << endl;
+			break;
+		}
+		else {
+			DWORD error = WSAGetLastError();
+			CHAR errorMsg[256] = {};
+			cout << "\nReceive error: " << FormatLastError(error, errorMsg) << endl;
+			break;
+		}
+		this_thread::sleep_for(chrono::milliseconds(10));
+	}
 }
 
 //FORMAT_MESSAGE_ALLOCATE_BUFFER — просит систему выделить память для буфера автоматически.

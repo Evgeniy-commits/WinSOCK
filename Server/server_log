@@ -726,3 +726,132 @@ RECV: evgen> (7 Bytes)
 SEND: Bytes sent: evgen> (7 bytes)
 RECV: evgen> (7 Bytes)
 SEND: Bytes sent: evgen> (7 bytes)
+RECV: evgen	Hello Server(18 Bytes)
+SEND: Bytes sent: evgen	Hello Server(18 bytes)
+RECV: hello(5 Bytes)
+SEND: Bytes sent: hello(5 bytes)
+RECV: Evgen> Hello(12 Bytes)
+SEND: Bytes sent: Evgen> Hello(12 bytes)
+RECV: Ivan> World(11 Bytes)
+SEND: Bytes sent: Ivan> World(11 bytes)
+RECV: Vasy> 123(9 Bytes)
+SEND: Bytes sent: Vasy> 123(9 bytes)
+RECV: Evgen> Hello(12 Bytes)
+SEND: Bytes sent: Evgen> Hello(12 bytes)
+RECV: Evgen> Worlg(12 Bytes)
+SEND: Bytes sent: Evgen> Worlg(12 bytes)
+RECV: Ivan> Hello Server(18 Bytes)
+SEND: Bytes sent: Ivan> Hello Server(18 bytes)
+RECV: Evgen> 123(10 Bytes)
+SEND: Bytes sent: Evgen> 123(10 bytes)
+RECV: Ivan> 123(9 Bytes)
+SEND: Bytes sent: Ivan> 123(9 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+RECV: Evgen> Hello(12 Bytes)
+SEND: Bytes sent: Evgen> Hello(12 bytes)
+RECV: Ivan> Hi, gays(14 Bytes)
+SEND: Bytes sent: Ivan> Hi, gays(14 bytes)
+RECV: Evgen> Hi(9 Bytes)
+SEND: Bytes sent: Evgen> Hi(9 bytes)
+RECV: Vasiliy> Всем привет(20 Bytes)
+SEND: Bytes sent: Vasiliy> Всем привет(20 bytes)
+RECV: Ivan> 123(9 Bytes)
+SEND: Bytes sent: Ivan> 123(9 bytes)
+RECV: Evgen> 123(10 Bytes)
+SEND: Bytes sent: Evgen> 123(10 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+RECV: Женя> Привет(12 Bytes)
+SEND: Bytes sent: Женя> Привет(12 bytes)
+RECV: Женя> Как дела(14 Bytes)
+SEND: Bytes sent: Женя> Как дела(14 bytes)
+RECV: Ваня> Всем привет(17 Bytes)
+SEND: Bytes sent: Ваня> Всем привет(17 bytes)
+RECV: Женя> 123(9 Bytes)
+SEND: Bytes sent: Женя> 123(9 bytes)
+RECV: 123> 123(8 Bytes)
+SEND: Bytes sent: 123> 123(8 bytes)
+RECV: умпут> 123(10 Bytes)
+SEND: Bytes sent: умпут> 123(10 bytes)
+RECV: умпут> 123(10 Bytes)
+SEND: Bytes sent: умпут> 123(10 bytes)
+RECV: 123> 123(8 Bytes)
+SEND: Bytes sent: 123> 123(8 bytes)
+RECV: 321> 321(8 Bytes)
+SEND: Bytes sent: 321> 321(8 bytes)
+RECV: 456> 456(8 Bytes)
+SEND: Bytes sent: 456> 456(8 bytes)
+RECV: 123> exit(9 Bytes)
+SEND: Bytes sent: 123> exit(9 bytes)
+RECV: 123> exit(9 Bytes)
+SEND: Bytes sent: 123> exit(9 bytes)
+Receive failed with error: 10054
+RECV: exit> exit(10 Bytes)
+SEND: Bytes sent: exit> exit(10 bytes)
+RECV: Evgen> 123(10 Bytes)
+SEND: Bytes sent: Evgen> 123(10 bytes)
+RECV: Ivan> 321(9 Bytes)
+SEND: Bytes sent: Ivan> 321(9 bytes)
+RECV: Evgen> 456(10 Bytes)
+SEND: Bytes sent: Evgen> 456(10 bytes)
+Receive failed with error: 10054
+RECV: Ivan> Hello(11 Bytes)
+SEND: Bytes sent: Ivan> Hello(11 bytes)
+RECV: Evgen> hello(12 Bytes)
+SEND: Bytes sent: Evgen> hello(12 bytes)
+Receive failed with error: 10054
+RECV: Ivan> jbm,(10 Bytes)
+SEND: Bytes sent: Ivan> jbm,(10 bytes)
+RECV: Ivan> mbnm, (12 Bytes)
+SEND: Bytes sent: Ivan> mbnm, (12 bytes)
+Receive failed with error: 10054
+Receive failed with error: 0
+Receive failed with error: 10038
+Receive failed with error: 10053
+Receive failed with error: 10053
+SEND: Bytes sent: Evgen> Hello(0 bytes)
+SEND: Bytes sent: Ivan> Hello(0 bytes)
+SEND: Bytes sent: Evgen> Hi, Ivan(0 bytes)
+SEND: Bytes sent: Ivan> Hi, Dgeck(0 bytes)
+SEND: Bytes sent: Vasiliy> Hi, gays(0 bytes)
+Receive failed with error: 10054
+SEND: Bytes sent: 1> 789(0 bytes)
+SEND: Bytes sent: 2> 852(0 bytes)
+Receive failed with error: 0
+Receive failed with error: 0
+Receive failed with error: 10038
+SEND: Bytes sent: 3> 789(0 bytes)
+SEND: Bytes sent: 2> 456(0 bytes)
+Receive failed with error: 10054
+SEND: Bytes sent: 3> exit(0 bytes)
+Receive failed with error: 10054
+SEND: Bytes sent: 3> lkhfds(0 bytes)
+SEND: Bytes sent: 1> 123(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: Evgen> Hello(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: Evgen> Hello(0 bytes)
+SEND: Bytes sent: Vasiliy> Hi(0 bytes)
+Receive failed with error: 10054
+SEND: Bytes sent: Ivan> World(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: Evgen> Hello(0 bytes)
+SEND: Bytes sent: Ivan> Hello(0 bytes)
+SEND: Bytes sent: Vasiliy> World(0 bytes)
+SEND: Bytes sent: Evgen> 123(0 bytes)
+SEND: Bytes sent: Evgen> 258(0 bytes)
+SEND: Bytes sent: Evgen> kjhvj,hv(0 bytes)
+SEND: Bytes sent: Ivan> 4445555666(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: Evgen> exit(0 bytes)
+INFO: Connection closing...
+Receive failed with error: 10054
+Receive failed with error: 10054
+Receive failed with error: 10054
