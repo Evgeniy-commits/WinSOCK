@@ -29,6 +29,7 @@ using namespace std;
 
 VOID receiveThread(SOCKET connect_socket);
 mutex outputMutex;
+string IdenMess(SOCKET connect_socket);
 
 void main()
 {
@@ -93,50 +94,22 @@ void main()
 	thread receiver(receiveThread, connect_socket);
 
 	//5.3) ОТправка и получение данных
-	CHAR sendbuffer[BUFFER_LENGTH] = {};
+	CHAR sendbuffer[BUFFER_LENGTH] = { "\tHello World" };
 	//5.1) Отправляем имя имя или инфо на сервер
-	//Ввод имени пользователя
-	string nick;
-	cout << "Введите свое имя: ";
-	SetConsoleCP(1251);
-	getline(cin, nick);
-	SetConsoleCP(866);
-	cout << endl;
 
-	string idenMess;
-	if (!nick.empty())
-	{
-		idenMess = nick;
-	}
-	else
-	{
-		sockaddr_in locAddr;
-		INT addrLen = sizeof(locAddr);
-		if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
-		{
-			CHAR locIP[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
-			INT locPort = ntohs(locAddr.sin_port);
-			idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
-		}
-		else
-		{
-			idenMess = "Мы не занем что это!!!";
-		}
-	}
-	
+	string idenMess = IdenMess(connect_socket);
+
 	do
 	{
 		ZeroMemory(sendbuffer, BUFFER_LENGTH);
-		CHAR recvbuffer[BUFFER_LENGTH] = {};
 		string message = "";
 		SetConsoleCP(1251);
-		cout << (nick.empty() ? "You" : nick) << "> ";
+		cout << idenMess << "> ";
 		cin.getline(sendbuffer, BUFFER_LENGTH);
 		SetConsoleCP(866);
-		(!nick.empty()) ? message = nick + "> " : message = idenMess + "> ";
-		message += sendbuffer;
-		
+		CHAR recvbuffer[BUFFER_LENGTH] = {};
+		message = idenMess + "> " + sendbuffer;
+				
 		iResult = send(connect_socket, message.c_str(), message.length(), 0);
 		if (iResult == SOCKET_ERROR)
 		{
@@ -175,6 +148,40 @@ void main()
 	WSACleanup();
 }
 
+string IdenMess(SOCKET connect_socket)
+{
+	//Ввод имени пользователя
+	string nick;
+	cout << "Введите свое имя: ";
+	SetConsoleCP(1251);
+	getline(cin, nick);
+	SetConsoleCP(866);
+	//cout << endl;
+
+	string idenMess;
+	if (!nick.empty())
+	{
+		idenMess = nick;
+	}
+	else
+	{
+		sockaddr_in locAddr;
+		INT addrLen = sizeof(locAddr);
+		if (getsockname(connect_socket, (sockaddr*)&locAddr, &addrLen) != SOCKET_ERROR)
+		{
+			CHAR locIP[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &locAddr.sin_addr, locIP, INET_ADDRSTRLEN);
+			INT locPort = ntohs(locAddr.sin_port);
+			idenMess = "IP: " + string(locIP) + " : " + to_string(locPort);
+		}
+		else
+		{
+			idenMess = "Мы не занем что это!!!";
+		}
+	}
+	return idenMess;
+}
+
 // Поток для приёма сообщений от сервера
 VOID receiveThread(SOCKET connect_socket) 
 {
@@ -188,7 +195,7 @@ VOID receiveThread(SOCKET connect_socket)
 		if (iResult > 0) 
 		{
 			lock_guard<mutex> lock(outputMutex);
-			cout << "\n[SER]" << recvbuffer << endl;
+			cout << "[SER]" << recvbuffer << endl;
 			//std::cout << (nick.empty() ? "You" : nick) << "> ";
 		}
 		else if (iResult == 0) {
