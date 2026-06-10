@@ -871,3 +871,12 @@ Receive failed with error: 10054
 SEND: Bytes sent: Evgen> exit(0 bytes)
 INFO: Connection closing...
 SEND: Bytes sent: 3> Сам привет(0 bytes)
+SEND: Bytes sent: 4> 5(0 bytes)
+SEND: Bytes sent: 3> 6(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: Danya> 123(0 bytes)
+SEND: Bytes sent: Evgen> сам привет(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+Receive failed with error: 10054

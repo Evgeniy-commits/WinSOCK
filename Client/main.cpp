@@ -30,6 +30,7 @@ using namespace std;
 VOID receiveThread(SOCKET connect_socket);
 mutex outputMutex;
 string IdenMess(SOCKET connect_socket);
+VOID IdenMessThread(SOCKET socket, string& result);
 
 void main()
 {
@@ -97,7 +98,10 @@ void main()
 	CHAR sendbuffer[BUFFER_LENGTH] = { "\tHello World" };
 	//5.1) Отправляем имя имя или инфо на сервер
 
-	string idenMess = IdenMess(connect_socket);
+
+	string idenMess; 
+	thread idThread(IdenMessThread, connect_socket, ref(idenMess));
+	idThread.join();
 
 	do
 	{
@@ -181,6 +185,13 @@ string IdenMess(SOCKET connect_socket)
 	}
 	return idenMess;
 }
+
+VOID IdenMessThread(SOCKET socket, string& result)
+{
+	result = IdenMess(socket);
+}
+
+
 
 // Поток для приёма сообщений от сервера
 VOID receiveThread(SOCKET connect_socket) 
