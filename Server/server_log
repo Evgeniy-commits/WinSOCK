@@ -880,3 +880,24 @@ SEND: Bytes sent: Evgen> сам привет(0 bytes)
 Receive failed with error: 10054
 Receive failed with error: 10054
 Receive failed with error: 10054
+SEND: Bytes sent: умпу> чпр(0 bytes)
+SEND: Bytes sent: яепачтс> српоо(0 bytes)
+SEND: Bytes sent: чаросьаоп> голмрор(0 bytes)
+SEND: Bytes sent: чаросьаоп> мбь(0 bytes)
+SEND: Bytes sent: чаросьаоп> спмоьэ(0 bytes)
+Receive failed with error: 10054
+Receive failed with error: 10054
+SEND: Bytes sent: IP: 127.0.0.1 : 50440> cvbfdx(0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50440> j m(0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50440> l,.mn(0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50470> hm j,m, (0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50470> n. ,\ (0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50470> .,(0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50470> .n/(0 bytes)
+SEND: Bytes sent: IP: 127.0.0.1 : 50911> Всем привет(0 bytes)
+SEND: Bytes sent: Ivan> Еще привет(0 bytes)
+SEND: Bytes sent: Evgen> Сам привет(0 bytes)
+SEND: Bytes sent: Ivan> exit(0 bytes)
+INFO: Connection closing...
+SEND: Bytes sent: Evgen> exit(0 bytes)
+INFO: Connection closing...

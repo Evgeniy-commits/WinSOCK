@@ -108,8 +108,8 @@ void main()
 		ZeroMemory(sendbuffer, BUFFER_LENGTH);
 		string message = "";
 		SetConsoleCP(1251);
-		cout << idenMess << "> ";
 		cin.getline(sendbuffer, BUFFER_LENGTH);
+		//cout << idenMess << "> ";
 		SetConsoleCP(866);
 		CHAR recvbuffer[BUFFER_LENGTH] = {};
 		message = idenMess + "> " + sendbuffer;
@@ -199,7 +199,8 @@ VOID receiveThread(SOCKET connect_socket)
 	CHAR recvbuffer[BUFFER_LENGTH];
 	int iResult;
 
-	while (true) {
+	while (strcmp(recvbuffer, DECLINE_MESSAGE) != 0) 
+	{
 		ZeroMemory(recvbuffer, BUFFER_LENGTH);
 		iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH - 1, 0);
 

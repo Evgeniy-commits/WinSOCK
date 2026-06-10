@@ -247,7 +247,7 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 	CHAR szClient_address[32] = {};
 	sprintf(szClient_address, "%s : %d - ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 
-	cout << "Client connected " << szClient_address << "SOCKET\t" << client_socket << endl;
+	cout << "Client connected " << szClient_address /*<< "SOCKET\t" << client_socket*/ << endl;
 	INT iResult = 0;
 	DWORD dwError;
 	CHAR szError[256] = {};
@@ -314,7 +314,7 @@ VOID ClientHandle(LPVOID g_ActiveClient)
 		cout << "Client shutdown failed with error: " << FormatLastError(dwError, szError) << endl;
 
 	closesocket(client_socket);
-	//ShowActiveClients();
+	ShowActiveClients();
 	ExitThread(0);
 }
 
