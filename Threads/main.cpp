@@ -1,6 +1,7 @@
 #include<iostream>
 #include<thread>
 #include<mutex>
+#include<condition_variable>
 #include<chrono>
 using std::cin;
 using std::cout;
@@ -10,15 +11,22 @@ using namespace std::chrono_literals;
 
 bool finish = false;
 std::mutex mtx;
+std::condition_variable cv;
+bool plus_turn = true;
 
 void Plus()
 {
 	while (!finish)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
+		std::unique_lock<std::mutex> lock(mtx);
+		cv.wait(lock, [] {return plus_turn || finish; });
+		if (finish) break;
+
 		cout << "+ ";
 		cout.flush();
-		std::this_thread::sleep_for(1ms);
+
+		plus_turn = false;
+		cv.notify_one();
 	}
 }
 
@@ -26,10 +34,14 @@ void Minus()
 {
 	while (!finish)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
+		std::unique_lock<std::mutex> lock(mtx);
+		cv.wait(lock, [] {return !plus_turn || finish; });
+
 		cout << "- ";
 		cout.flush();
-		std::this_thread::sleep_for(1ms);
+
+		plus_turn = true;
+		cv.notify_one();
 	}
 }
 
@@ -41,7 +53,12 @@ void main()
 	std::thread minus_thread(Minus);
 
 	cin.get();
-	finish = true;
+	{
+		std::lock_guard<std::mutex> lock(mtx);
+		finish = true;
+	}
+
+	cv.notify_all();
 
 	if(plus_thread.joinable())plus_thread.join();
 	if(minus_thread.joinable())minus_thread.join();
