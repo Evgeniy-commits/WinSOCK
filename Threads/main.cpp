@@ -1,6 +1,6 @@
 #include<iostream>
 #include<thread>
-#include<mutex>
+#include<windows.h>
 #include<chrono>
 using std::cin;
 using std::cout;
@@ -9,16 +9,17 @@ using namespace std::chrono_literals;
 
 
 bool finish = false;
-std::mutex mtx;
+HANDLE hMtx;
 
 void Plus()
 {
 	while (!finish)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
+		WaitForSingleObject(hMtx, INFINITE);
 		cout << "+ ";
 		cout.flush();
-		std::this_thread::sleep_for(1ms);
+		//std::this_thread::sleep_for(1ms);
+		ReleaseMutex(hMtx);
 	}
 }
 
@@ -26,10 +27,11 @@ void Minus()
 {
 	while (!finish)
 	{
-		std::lock_guard<std::mutex> lock(mtx);
+		WaitForSingleObject(hMtx, INFINITE);
 		cout << "- ";
 		cout.flush();
-		std::this_thread::sleep_for(1ms);
+		//std::this_thread::sleep_for(1ms);
+		ReleaseMutex(hMtx);
 	}
 }
 
@@ -37,6 +39,8 @@ void main()
 {
 	setlocale(LC_ALL, "");
 	
+	hMtx = CreateMutex(NULL, FALSE, NULL);
+
 	std::thread plus_thread(Plus);
 	std::thread minus_thread(Minus);
 
